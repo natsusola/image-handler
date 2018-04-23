@@ -1,5 +1,6 @@
 <template>
   <div class="content">
+    <!-- Form Column -->
     <div>
       <h4>Upload Image</h4>
       <div class="form-check" style="display: flex">
@@ -12,7 +13,8 @@
           File
         </label>
         <input ref="fileInput" type="file" class="col form-control-file"
-          :disabled="uploadType !== 'file'"/>
+          :disabled="uploadType !== 'file'"
+          @change="onUploadImageFile($event)"/>
       </div>
       <div class="form-check" style="display: flex; margin: 10px 0">
         <input class="form-check-input" type="radio"
@@ -30,14 +32,17 @@
       </div>
       <button class="btn btn-primary">Upload</button>
     </div>
+    <!-- Form Column -->
     <div style="margin-top: 20px">
       <h4>Adjust Image</h4>
       <div class="row">
-        <div class="col-4">
-          Origin
+        <div class="col-5">
+          <div>Origin</div>
+          <div ref="originCvsContainer"></div>
         </div>
-        <div class="col-4">
-          After
+        <div class="col-5">
+          <div>Edit</div>
+          <div ref="editCvsContainer"></div>
         </div>
       </div>
     </div>
@@ -48,7 +53,43 @@
   export default {
     data: () => ({
       url: '',
-      uploadType: 'file'
+      uploadType: 'file',
+      originCvsCtx: {},
+      editCvsCtx: {}
     }),
+    mounted() {
+      // this.originCvsCtx = this.$refs.originCvs.getContext('2d');
+      // this.editCvsCtx = this.$refs.editCvs.getContext('2d');
+    },
+    methods: {
+      onUploadImageFile(e) {
+        if (e.target.files[0]) {
+          // let _reader = new FileReader();
+          // _reader.onload = e => {
+          //
+          // };
+          let _img = new Image();
+          _img.onload = _e => { this.initCanvas(_e, _img); };
+          _img.src = URL.createObjectURL(e.target.files[0]);
+        }
+      },
+      initCanvas(e, img) {
+        this.$refs.originCvsContainer.innerHTML = '';
+        this.$refs.editCvsContainer.innerHTML = '';
+
+        let _originCanvas = document.createElement('canvas');
+        _originCanvas.width = e.path[0].width;
+        _originCanvas.height = e.path[0].height;
+        let _editCanvas = _originCanvas.cloneNode(true);
+        this.originCvsCtx = _originCanvas.getContext('2d');
+        this.editCvsCtx = _editCanvas.getContext('2d');
+
+        this.$refs.originCvsContainer.appendChild(_originCanvas);
+        this.$refs.editCvsContainer.appendChild(_editCanvas);
+
+        this.originCvsCtx.drawImage(img, 0, 0);
+        this.editCvsCtx.drawImage(img, 0, 0);
+      }
+    },
   };
 </script>

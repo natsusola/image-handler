@@ -40,8 +40,11 @@
           <div>Origin</div>
           <div ref="originCvsContainer"></div>
         </div>
-        <div class="col-5">
+        <div class="">
           <div>Edit</div>
+          <div>
+            <a href @click.prevent="doCropper()">Cropper</a> |
+          </div>
           <div ref="editCvsContainer"></div>
         </div>
       </div>
@@ -50,28 +53,31 @@
 </template>
 
 <script>
+  import Cropper from 'cropperjs';
+
   export default {
     data: () => ({
       url: '',
       uploadType: 'file',
       originCvsCtx: {},
-      editCvsCtx: {}
+      editCvsCtx: {},
+      cropper: {}
     }),
     mounted() {
-      // this.originCvsCtx = this.$refs.originCvs.getContext('2d');
-      // this.editCvsCtx = this.$refs.editCvs.getContext('2d');
     },
     methods: {
       onUploadImageFile(e) {
         if (e.target.files[0]) {
-          // let _reader = new FileReader();
-          // _reader.onload = e => {
-          //
-          // };
           let _img = new Image();
           _img.onload = _e => { this.initCanvas(_e, _img); };
           _img.src = URL.createObjectURL(e.target.files[0]);
         }
+      },
+      doCropper() {
+        this.$refs.editCvsContainer.innerHTML = '';
+        let _editCanvas = this.cropper.getCroppedCanvas();
+        this.$refs.editCvsContainer.appendChild(_editCanvas);
+        this.cropper = new Cropper(_editCanvas);
       },
       initCanvas(e, img) {
         this.$refs.originCvsContainer.innerHTML = '';
@@ -89,6 +95,8 @@
 
         this.originCvsCtx.drawImage(img, 0, 0);
         this.editCvsCtx.drawImage(img, 0, 0);
+
+        this.cropper = new Cropper(_editCanvas);
       }
     },
   };

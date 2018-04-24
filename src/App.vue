@@ -40,10 +40,12 @@
           <div>Origin</div>
           <div ref="originCvsContainer"></div>
         </div>
-        <div class="col-5">
+        <div class="">
           <div>Edit</div>
+          <div>
+            <a href @click.prevent="doCropper()">Cropper</a> |
+          </div>
           <div ref="editCvsContainer"></div>
-          <button @click="doGet()">Get</button>
         </div>
       </div>
     </div>
@@ -71,9 +73,11 @@
           _img.src = URL.createObjectURL(e.target.files[0]);
         }
       },
-      doGet() {
-        log('click');
-        log(this.cropper.getCroppedCanvas());
+      doCropper() {
+        this.$refs.editCvsContainer.innerHTML = '';
+        let _editCanvas = this.cropper.getCroppedCanvas();
+        this.$refs.editCvsContainer.appendChild(_editCanvas);
+        this.cropper = new Cropper(_editCanvas);
       },
       initCanvas(e, img) {
         this.$refs.originCvsContainer.innerHTML = '';
@@ -85,7 +89,6 @@
         let _editCanvas = _originCanvas.cloneNode(true);
         this.originCvsCtx = _originCanvas.getContext('2d');
         this.editCvsCtx = _editCanvas.getContext('2d');
-
 
         this.$refs.originCvsContainer.appendChild(_originCanvas);
         this.$refs.editCvsContainer.appendChild(_editCanvas);

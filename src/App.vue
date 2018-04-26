@@ -54,7 +54,7 @@
 </template>
 
 <script>
-  import Cropper from '@/plugins/cropperjs';
+  import Cropper from '@/plugins/cropperjs/dist/cropper.min.js';
 
   export default {
     data: () => ({

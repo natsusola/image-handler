@@ -54,7 +54,7 @@
 </template>
 
 <script>
-  import Cropper from 'cropperjs';
+  import Cropper from '@/plugins/cropperjs';
 
   export default {
     data: () => ({
@@ -82,7 +82,7 @@
         let _editCanvas = this.cropper.getCroppedCanvas();
         _editCanvas.id = 'editCanvas';
         this.$refs.editCvsContainer.appendChild(_editCanvas);
-        this.cropper = new Cropper(_editCanvas);
+        this.cropper = new Cropper(_editCanvas, {zoomOnWheel: false});
       },
       doPixelate() {
         let _oldCropData = this.cropper.getCropBoxData();
@@ -116,7 +116,10 @@
 
         this.$refs.editCvsContainer.innerHTML = '';
         this.$refs.editCvsContainer.appendChild(_oldCanvas);
-        this.cropper = new Cropper(_oldCanvas);
+        this.cropper = new Cropper(_oldCanvas, {
+          zoomOnWheel: false,
+          ready: () => { this.cropper.setCropBoxData(_oldCropData); }
+        });
       },
       initCanvas(e, img) {
         this.$refs.originCvsContainer.innerHTML = '';
@@ -138,7 +141,7 @@
         this.editCvsCtx.drawImage(img, 0, 0);
         log(this.editCvsCtx);
 
-        this.cropper = new Cropper(_editCanvas);
+        this.cropper = new Cropper(_editCanvas, {zoomOnWheel: false});
       }
     },
   };

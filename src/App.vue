@@ -27,10 +27,10 @@
           URL
         </label>
         <input class="col-5 form-control" style="margin-left: 15px"
-          v-model.trim="url"
+          v-model.trim="imgUrl"
           :disabled="uploadType !== 'url'"/>
       </div>
-      <button class="btn btn-primary">Upload</button>
+      <button class="btn btn-primary" @click="doUploadImage()">Upload</button>
     </div>
     <!-- Form Column -->
     <div style="margin-top: 20px">
@@ -59,19 +59,34 @@
 
   export default {
     data: () => ({
-      url: '',
       uploadType: 'file',
+      imgFile: null,
+      imgUrl: '',
       cropper: null,
     }),
-    mounted() {
-    },
     methods: {
-      onUploadImageFile(e) {
-        if (e.target.files[0]) {
-          let _img = new Image();
-          _img.onload = _e => { this.initCanvas(_e, _img); };
-          _img.src = URL.createObjectURL(e.target.files[0]);
+      doUploadImage() {
+        if (
+          (this.uploadType === 'file' && !this.imgFile) ||
+          (this.uploadType === 'url' && !this.imgUrl)
+        ) {
+          alert('Please set image source.');
+          return
         }
+        if (this.uploadType === 'file') this.imageHandler(this.imgFile);
+        else if (this.uploadType === 'url') this.imageHandler(this.imgUrl);
+      },
+      onUploadImageFile(e) {
+        if (e.target.files[0]) { this.imgFile = e.target.files[0]; }
+      },
+      imageHandler(imgSrc) {
+        let _img = new Image();
+        _img.onload = (e) => {
+          this.initCanvas(_img);
+        };
+        _img.onerror = () => { alert('Not a image file.'); }
+        if (typeof imgSrc === 'object') _img.src = URL.createObjectURL(imgSrc);
+        else if (typeof imgSrc === 'string') _img.src = imgSrc;
       },
       doCropper() {
         this.$refs.editCvsContainer.innerHTML = '';
@@ -127,14 +142,17 @@
         this.$refs.editCvsContainer.appendChild(_editCanvas);
         this.cropper = new Cropper(_editCanvas, {zoomOnWheel: false});
       },
-      initCanvas(e, img) {
+      doDownload() {
+
+      },
+      initCanvas(img) {
         this.$refs.originCvsContainer.innerHTML = '';
         this.$refs.editCvsContainer.innerHTML = '';
 
         let _originCanvas = document.createElement('canvas');
         _originCanvas.id = 'origin-canvas'
-        _originCanvas.width = e.path[0].width;
-        _originCanvas.height = e.path[0].height;
+        _originCanvas.width = img.width;
+        _originCanvas.height = img.height;
         let _editCanvas = _originCanvas.cloneNode(true);
         _editCanvas.id = 'edit-canvas';
         _originCanvas.getContext('2d').drawImage(img, 0, 0);

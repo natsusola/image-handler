@@ -40,8 +40,12 @@
           <div>Origin</div>
           <div ref="originCvsContainer"></div>
         </div>
-        <div class="col-5">
+        <div class="">
           <div>Edit</div>
+          <div>
+            <a href @click.prevent="doCropper()">Cropper</a> |
+            <a href @click.prevent="doPixelate()">Pixelate</a> |
+          </div>
           <div ref="editCvsContainer"></div>
         </div>
       </div>
@@ -50,28 +54,72 @@
 </template>
 
 <script>
+  import Cropper from '@/plugins/cropperjs/src';
+
   export default {
     data: () => ({
       url: '',
       uploadType: 'file',
       originCvsCtx: {},
-      editCvsCtx: {}
+      editCvsCtx: {},
+      editCanvas: {},
+      cropper: {},
+      imgData: undefined
     }),
     mounted() {
-      // this.originCvsCtx = this.$refs.originCvs.getContext('2d');
-      // this.editCvsCtx = this.$refs.editCvs.getContext('2d');
     },
     methods: {
       onUploadImageFile(e) {
         if (e.target.files[0]) {
-          // let _reader = new FileReader();
-          // _reader.onload = e => {
-          //
-          // };
           let _img = new Image();
+          this.imgData = _img;
           _img.onload = _e => { this.initCanvas(_e, _img); };
           _img.src = URL.createObjectURL(e.target.files[0]);
         }
+      },
+      doCropper() {
+        this.$refs.editCvsContainer.innerHTML = '';
+        let _editCanvas = this.cropper.getCroppedCanvas();
+        _editCanvas.id = 'editCanvas';
+        this.$refs.editCvsContainer.appendChild(_editCanvas);
+        this.cropper = new Cropper(_editCanvas, {zoomOnWheel: false});
+      },
+      doPixelate() {
+        let _oldCropData = this.cropper.getCropBoxData();
+        let _oldCanvas = document.getElementById('editCanvas');
+        this.cropper.setCropBoxData({
+          left: 0,
+          top: 0,
+          width: _oldCanvas.width,
+          height: _oldCanvas.height
+        });
+        _oldCanvas = this.cropper.getCroppedCanvas();
+        _oldCanvas.id = 'editCanvas';
+        let _oldCtx = _oldCanvas.getContext('2d');
+
+        this.cropper.setCropBoxData(_oldCropData);
+        let _editCanvas = this.cropper.getCroppedCanvas();
+        let _editCtx = _editCanvas.getContext('2d');
+
+        let  w =_editCanvas.width * 0.15;
+        let  h =_editCanvas.height * 0.15;
+
+        _editCtx.drawImage(_editCanvas, 0, 0, w, h);
+
+        _editCtx.msImageSmoothingEnabled = false;
+        _editCtx.mozImageSmoothingEnabled = false;
+        _editCtx.webkitImageSmoothingEnabled = false;
+        _editCtx.imageSmoothingEnabled = false;
+
+        _editCtx.drawImage(_editCanvas, 0, 0, w, h, 0, 0, _editCanvas.width, _editCanvas.height);
+        _oldCtx.drawImage(_editCanvas, _oldCropData.left, _oldCropData.top);
+
+        this.$refs.editCvsContainer.innerHTML = '';
+        this.$refs.editCvsContainer.appendChild(_oldCanvas);
+        this.cropper = new Cropper(_oldCanvas, {
+          zoomOnWheel: false,
+          ready: () => { this.cropper.setCropBoxData(_oldCropData); }
+        });
       },
       initCanvas(e, img) {
         this.$refs.originCvsContainer.innerHTML = '';
@@ -81,6 +129,8 @@
         _originCanvas.width = e.path[0].width;
         _originCanvas.height = e.path[0].height;
         let _editCanvas = _originCanvas.cloneNode(true);
+        _editCanvas.id = 'editCanvas';
+        this.editCanvas = _editCanvas;
         this.originCvsCtx = _originCanvas.getContext('2d');
         this.editCvsCtx = _editCanvas.getContext('2d');
 
@@ -89,6 +139,9 @@
 
         this.originCvsCtx.drawImage(img, 0, 0);
         this.editCvsCtx.drawImage(img, 0, 0);
+        log(this.editCvsCtx);
+
+        this.cropper = new Cropper(_editCanvas, {zoomOnWheel: false});
       }
     },
   };

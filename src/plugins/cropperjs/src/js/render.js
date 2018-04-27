@@ -42,7 +42,7 @@ export default {
 
     const containerData = {
       width: Math.max(
-        container.offsetWidth,
+        container.offsetWidth - 13,
         Number(options.minContainerWidth) || 200,
       ),
       height: Math.max(

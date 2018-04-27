@@ -45,7 +45,8 @@
           <div>
             <a href @click.prevent="doCropper()">Cropper</a> |
             <a href @click.prevent="doPixelate()">Pixelate</a> |
-            <a href @click.prevent="doReset()">Reset</a>
+            <a href @click.prevent="doReset()">Reset</a> |
+            <a v-bind:href="downloadImg" download="edited_img.jpg">Download</a>
           </div>
           <div ref="editCvsContainer"></div>
         </div>
@@ -63,6 +64,7 @@
       imgFile: null,
       imgUrl: '',
       cropper: null,
+      downloadImg: ''
     }),
     methods: {
       doUploadImage() {
@@ -127,6 +129,7 @@
 
         this.$refs.editCvsContainer.innerHTML = '';
         this.$refs.editCvsContainer.appendChild(_oldCanvas);
+        this.setDownloadHref(_oldCanvas.toDataURL('image/jpeg'));
         this.cropper = new Cropper(_oldCanvas, {
           zoomOnWheel: false,
           ready: () => { this.cropper.setCropBoxData(_oldCropData); }
@@ -140,10 +143,8 @@
         _editCanvas.id = 'edit-canvas';
         _editCanvas.getContext('2d').drawImage(_originCanvas, 0, 0);
         this.$refs.editCvsContainer.appendChild(_editCanvas);
+        this.setDownloadHref(_editCanvas.toDataURL('image/jpeg'));
         this.cropper = new Cropper(_editCanvas, {zoomOnWheel: false});
-      },
-      doDownload() {
-
       },
       initCanvas(img) {
         this.$refs.originCvsContainer.innerHTML = '';
@@ -161,7 +162,12 @@
         this.$refs.originCvsContainer.appendChild(_originCanvas);
         this.$refs.editCvsContainer.appendChild(_editCanvas);
 
+        this.setDownloadHref(_editCanvas.toDataURL('image/jpeg'));
+
         this.cropper = new Cropper(_editCanvas, {zoomOnWheel: false});
+      },
+      setDownloadHref(href) {
+        this.downloadImg = href;
       }
     },
   };

@@ -46,6 +46,7 @@
             <a href @click.prevent="doCropper()">Cropper</a> |
             <a href @click.prevent="doPixelate()">Pixelate</a> |
             <a href @click.prevent="doReset()">Reset</a> |
+            <!-- <a href @click.prevent="doTest()">Test</a> | -->
             <a v-bind:href="downloadImg" download="edited_img.jpg">Download</a>
           </div>
           <div ref="editCvsContainer"></div>
@@ -57,6 +58,10 @@
 
 <script>
   import Cropper from '@/plugins/cropperjs/src';
+  Cropper.setDefaults({
+    zoomOnWheel: false,
+    viewMode: 2
+  })
 
   export default {
     data: () => ({
@@ -97,16 +102,22 @@
         this.$refs.editCvsContainer.appendChild(_cropedCanvas);
         this.cropper = new Cropper(_cropedCanvas, { zoomOnWheel: false });
       },
+      // doTest() {
+      //   log(this.cropper.getCropBoxData());
+      //   log(this.cropper.getCroppedCanvas());
+      //   log(this.cropper.getImageData());
+      //   log(this.cropper.getContainerData());
+      // },
       doPixelate() {
         let _oldCropData = this.cropper.getCropBoxData();
-        let _oldCanvas = document.getElementById('edit-canvas');
         this.cropper.setCropBoxData({
           left: 0,
           top: 0,
-          width: _oldCanvas.width,
-          height: _oldCanvas.height
+          width: this.cropper.getContainerData().width,
+          height: this.cropper.getContainerData().height
         });
-        _oldCanvas = this.cropper.getCroppedCanvas();
+
+        let _oldCanvas = this.cropper.getCroppedCanvas();
         _oldCanvas.id = 'edit-canvas';
         let _oldCtx = _oldCanvas.getContext('2d');
 
@@ -131,7 +142,6 @@
         this.$refs.editCvsContainer.appendChild(_oldCanvas);
         this.setDownloadHref(_oldCanvas.toDataURL('image/jpeg'));
         this.cropper = new Cropper(_oldCanvas, {
-          zoomOnWheel: false,
           ready: () => { this.cropper.setCropBoxData(_oldCropData); }
         });
       },
@@ -144,7 +154,7 @@
         _editCanvas.getContext('2d').drawImage(_originCanvas, 0, 0);
         this.$refs.editCvsContainer.appendChild(_editCanvas);
         this.setDownloadHref(_editCanvas.toDataURL('image/jpeg'));
-        this.cropper = new Cropper(_editCanvas, {zoomOnWheel: false});
+        this.cropper = new Cropper(_editCanvas);
       },
       initCanvas(img) {
         this.$refs.originCvsContainer.innerHTML = '';
@@ -155,6 +165,7 @@
         _originCanvas.width = img.width;
         _originCanvas.height = img.height;
         let _editCanvas = _originCanvas.cloneNode(true);
+        _originCanvas.style['max-width'] = '100%';
         _editCanvas.id = 'edit-canvas';
         _originCanvas.getContext('2d').drawImage(img, 0, 0);
         _editCanvas.getContext('2d').drawImage(img, 0, 0);
@@ -164,7 +175,7 @@
 
         this.setDownloadHref(_editCanvas.toDataURL('image/jpeg'));
 
-        this.cropper = new Cropper(_editCanvas, {zoomOnWheel: false});
+        this.cropper = new Cropper(_editCanvas);
       },
       setDownloadHref(href) {
         this.downloadImg = href;
